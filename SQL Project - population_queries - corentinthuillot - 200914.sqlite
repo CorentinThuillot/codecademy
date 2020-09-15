@@ -1,0 +1,250 @@
+SELECT * FROM countries
+LIMIT 2;
+
+SELECT * FROM population_years
+LIMIT 2;
+
+
+
+-- 3
+
+-- How many entries in the countries table are from Africa?
+
+SELECT COUNT(*) AS 'Q3-T1-countries-africa'
+FROM countries
+WHERE continent IS 'Africa';
+
+-- 4
+
+
+
+-- What was the total population of the continent of Oceania in 2005?
+
+---- T1 = countries
+---- T2 = population_years
+
+---- Verifications
+
+SELECT COUNT(*)
+  AS 'Q4-T2-Verif-NULL-or-0-country_id'
+FROM population_years
+WHERE country_id IS NULL
+  OR country_id IS 0;
+
+-------- There are no NULL values in the country_id column in T2
+
+SELECT MAX(country_id)
+  AS 'Q4-T2-Verif-MAX-T2.country_id'
+FROM population_years;
+
+-------- The maximum country_id in T2 is 214
+
+SELECT MAX(id)
+  AS 'Q4-T1-Verif-MAX-T1.id'
+FROM countries;
+
+SELECT COUNT(*)
+  AS 'Q4-T1-Verif-COUNT-Rows'
+FROM countries;
+
+-------- The maximum country_id in T1 is 214 and there are 214 rows in the table, meaning every number from 1 to 214 is used in the id columns.
+
+-------- Thus, every country_id from T2 will match an id from T1, meaning we can left join T2 and T1 on T2.country_id and T1.id without data loss.
+
+SELECT COUNT(*)
+  AS 'Q4-T2-LJ-T1-Verif-NULL-population-oceania-2005'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE continent IS 'Oceania'
+  AND year IS '2005'
+  AND population IS NULL;
+
+-------- There are no NULL value in the population column of this joint table for continent = 'Oceania' and year = '2005'.
+
+---- Answer
+
+SELECT ROUND(SUM(population),1)
+  AS 'Q4-T2-LJ-T1-population-oceania-2005'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE continent IS 'Oceania'
+  AND year IS '2005';
+
+
+
+-- 5
+
+-- What is the average population of countries in South America in 2003?
+
+---- Verifications
+
+SELECT COUNT(*)
+  AS 'Q5-T2-LJ-T1-Verif-NULL-population-southamerica-2003'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE continent IS 'South America'
+  AND year IS '2003'
+  AND population IS NULL;
+
+-------- There are no NULL value in the population column of this joint table for continent = 'South America' and year = '2003'.
+
+---- Answer
+
+SELECT ROUND(AVG(population),1)
+  AS 'Q5-T2-LJ-T1-AVG-population-southamerica-2003'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE continent IS 'South America'
+  AND year IS '2003';
+
+
+
+-- 6
+
+-- What country had the smallest population in 2007?
+
+---- Verifications
+
+SELECT COUNT(*)
+  AS 'Q6-T2-LJ-T1-Verif-NULL-population-2007'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE year IS '2007'
+  AND population IS NULL;
+
+--------- /!\ One country's population in 2007 is not given. For the purpose of this exercise, we will suppose we are only taking into accounts the countries which have a non-NULL value in the population column.
+
+---- Answer
+
+SELECT name
+  AS 'Q6-T2-LJ-T1-min-notNULL-population-2007'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE year IS '2007'
+  AND population IS NOT NULL
+ORDER BY population
+LIMIT 1;
+
+
+
+-- 7
+
+-- What is the average population of Poland during the time period covered by this dataset?
+
+---- Verifications
+
+SELECT COUNT(*)
+  AS 'Q7-T2-LJ-T1-Verif-NULL-year-poland'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE name IS 'Poland'
+  AND year IS NULL;
+
+-------- There are no NULL value in the year column of this joint table for country = 'Poland'.
+
+SELECT MIN(year)
+  AS 'Q7-T2-LJ-T1-Verif-MIN-year-poland'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE name IS 'Poland';
+
+SELECT MAX(year)
+  AS 'Q7-T2-LJ-T1-Verif-MAX-year-poland'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE name IS 'Poland';
+
+SELECT COUNT(DISTINCT year)
+  AS 'Q7-T2-LJ-T1-Verif-UNIQUECOUNT-year-poland'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE name IS 'Poland';
+
+-------- There are 11 years from 2000 to 2010 (both included) and 11 unique values in the year column of this joint table for country = Poland.
+
+SELECT COUNT(*)
+  AS 'Q7-T2-LJ-T1-Verif-NULL-population-poland'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE name IS 'Poland'
+  AND population IS NULL;
+
+-------- There is a value in the population column of the joint table for each of the 11 years for country = Poland.
+
+-------- Thus, each year of the period from 2000 to 2011 is represented in this joint table and is attributed a non-NULL value in the population column.
+
+---- Answer
+
+SELECT ROUND(AVG(population),1)
+  AS 'Q7-T2-LJ-T1-AVG-population-Poland-2000to2010'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE name IS 'Poland';
+
+
+
+-- 8
+
+-- How many countries have the word “The” in their name?
+
+SELECT COUNT(*)
+  AS 'Q8-T1-countries-containing-word-The'
+FROM countries
+WHERE name LIKE 'The%'
+  OR name LIKE '% The';
+
+
+
+-- 9
+
+-- What was the total population of each continent in 2010?
+
+---- Verifications
+
+SELECT continent
+  AS 'Q9-T2-LJ-T1-Verif-NULL-population-2010'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE year IS '2010'
+  AND population IS NULL;
+
+-------- /!\ One country's population in 2010 in Europe is not given. For the purpose of this exercise, we will suppose we are only taking into accounts the countries which have a non-NULL value in the population column. Although, only Europe is affected by this hypothesis.
+
+SELECT COUNT(DISTINCT continent)
+  AS 'Q9-T2-LJ-T1-Verif-UNIQUECOUNT-continent'
+FROM countries;
+
+SELECT COUNT(DISTINCT continent)
+  AS 'Q9-T2-LJ-T1-Verif-UNIQUECOUNT-continent-2010'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE year IS '2010';
+
+-------- Each continent from the database is represented in this joint table and is attributed a non-NULL value in the population column (Europe having at least Poland from what we have seen before).
+
+---- Answer
+
+SELECT continent
+    AS 'Q9-T2-LJ-T1-continents',
+  ROUND(SUM(population),1)
+    AS 'population-2010'
+FROM population_years
+LEFT JOIN countries
+ON population_years.country_id = countries.id
+WHERE year IS '2010'
+  AND population IS NOT NULL
+GROUP BY continent;
